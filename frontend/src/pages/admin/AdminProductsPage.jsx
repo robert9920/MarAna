@@ -22,10 +22,19 @@ export function AdminProductsPage() {
   const categoriesQuery = useQuery({ queryKey: ["admin-categories"], queryFn: adminApi.categories });
   const productsQuery = useQuery({ queryKey: ["admin-products"], queryFn: adminApi.products });
   const [form, setForm] = useState(emptyProduct);
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [productFilter, setProductFilter] = useState("");
   const { message, showToast } = useToast();
   const categories = categoriesQuery.data || [];
   const products = productsQuery.data || [];
   const canSave = useMemo(() => categories.length > 0 && form.name && form.category_id, [categories.length, form]);
+
+  const filteredProducts = useMemo(() => {
+    const q = productFilter.trim().toLowerCase();
+    return products
+      .filter((product) => !categoryFilter || product.category_id === categoryFilter)
+      .filter((product) => !q || `${product.name} ${product.brand || ""}`.toLowerCase().includes(q));
+  }, [categoryFilter, productFilter, products]);
 
   const mutation = useMutation({
     mutationFn: adminApi.saveProduct,
@@ -128,6 +137,23 @@ export function AdminProductsPage() {
       {form.id ? <ProductImageManager form={form} setForm={setForm} showToast={showToast} /> : (
         <div className="panel p-3 text-sm text-stone-700">Guarda el producto para poder subir imágenes y elegir la portada.</div>
       )}
+      <section className="panel p-3">
+        <div className="grid gap-2.5 sm:grid-cols-2">
+          <label>
+            <span className="form-label">Filtrar por categoría</span>
+            <select className="form-input" value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>
+              <option value="">Todas las categorías</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>{category.name}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span className="form-label">Buscar producto</span>
+            <input className="form-input" value={productFilter} onChange={(event) => setProductFilter(event.target.value)} placeholder="Escribe nombre o marca" />
+          </label>
+        </div>
+      </section>
       <section className="panel overflow-x-auto">
         <table className="w-full min-w-[700px] border-collapse">
           <colgroup>
@@ -149,7 +175,7 @@ export function AdminProductsPage() {
             </tr>
           </thead>
           <tbody>
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <tr key={product.id}>
                 <td className="table-cell">
                   <p className="font-bold text-cafe">{product.name}</p>
@@ -173,6 +199,7 @@ export function AdminProductsPage() {
           </tbody>
         </table>
       </section>
+      {!filteredProducts.length ? <div className="panel p-4 text-center text-sm font-bold text-cafe">No hay productos que coincidan con los filtros.</div> : null}
     </div>
   );
 }
