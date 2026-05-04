@@ -1,0 +1,45 @@
+# Environment
+.env
+!.env.example
+!*/.env.example
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+*.pyc
+__pycache__/
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vite
+frontend/.vite/
+
+# Vercel
+.vercel
+
+# Optional npm cache
+.npm
+
+# Optional ESLint
+.eslintcache
+
+# Optional lockfiles (keep in repo if you want)
+# package-lock.json
+# yarn.lock
