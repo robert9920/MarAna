@@ -150,6 +150,7 @@ create trigger products_set_updated_at
 before update on public.products
 for each row execute function public.set_updated_at();
 
+
 drop trigger if exists site_settings_set_updated_at on public.site_settings;
 create trigger site_settings_set_updated_at
 before update on public.site_settings
