@@ -13,7 +13,13 @@ export function CatalogPage() {
 
   const products = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return (productsQuery.data || []).filter((product) => !q || `${product.name} ${product.brand}`.toLowerCase().includes(q));
+    const filtered = (productsQuery.data || []).filter((product) => !q || `${product.name} ${product.brand}`.toLowerCase().includes(q));
+    return filtered.sort((a, b) => {
+      const aAvailable = a.stock > 0 ? 0 : 1;
+      const bAvailable = b.stock > 0 ? 0 : 1;
+      if (aAvailable !== bAvailable) return aAvailable - bAvailable;
+      return a.price - b.price;
+    });
   }, [productsQuery.data, query]);
 
   return (
