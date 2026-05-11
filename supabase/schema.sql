@@ -20,6 +20,8 @@ create table if not exists public.products (
   description text,
   price numeric(12, 2) not null default 0 check (price >= 0),
   stock integer not null default 0 check (stock >= 0),
+  gender text check (gender is null or gender in ('mujer', 'hombre', 'unisex', 'niña', 'niño')),
+  sizes text[] not null default '{}',
   low_stock_threshold integer not null default 4 check (low_stock_threshold >= 0),
   status text not null default 'active' check (status in ('active', 'draft', 'archived')),
   featured boolean not null default false,
@@ -58,6 +60,7 @@ create table if not exists public.category_images (
 create table if not exists public.site_settings (
   id integer primary key default 1 check (id = 1),
   show_exact_stock boolean not null default true,
+  show_product_specs boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -284,8 +287,8 @@ set name = excluded.name,
     display_order = excluded.display_order,
     is_active = excluded.is_active;
 
-insert into public.site_settings (id, show_exact_stock)
-values (1, true)
+insert into public.site_settings (id, show_exact_stock, show_product_specs)
+values (1, true, false)
 on conflict (id) do nothing;
 
 grant select on public.categories to anon, authenticated;

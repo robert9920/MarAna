@@ -42,8 +42,8 @@ textarea:focus-visible {
   @apply min-h-9 w-full rounded-lg border-2 border-stone-300 bg-white px-3 py-2 text-sm text-tinta shadow-sm;
 }
 
-.form-input-search {
-  padding-left: 3.5rem;
+.form-input-with-icon {
+  padding-left: 3.25rem;
 }
 
 .btn-primary {

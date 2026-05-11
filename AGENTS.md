@@ -154,8 +154,8 @@ Layouts:
 
 Páginas públicas:
 
-- `/`: catálogo con búsqueda y filtros.
-- `/categoria/:slug`: productos por categoría.
+- `/`: catálogo con búsqueda, filtro por categoría y filtro por género.
+- `/categoria/:slug`: productos por categoría con búsqueda y filtro por género.
 - `/producto/:slug`: detalle del producto y botón de WhatsApp.
 
 Páginas Admin:
@@ -171,6 +171,7 @@ Componentes relevantes:
 - `frontend/src/components/ProductCard.jsx`
 - `frontend/src/components/CatalogFilters.jsx`
 - `frontend/src/components/admin/ProtectedAdminRoute.jsx`
+- `frontend/src/styles.css`: contiene `.form-input-with-icon` para inputs de búsqueda con lupa.
 
 Cliente API y fallback demo:
 
@@ -195,6 +196,8 @@ Diseño:
 - Público objetivo principal: compradores de 50+ años.
 - Evitar interfaces densas o texto demasiado pequeño.
 - Usar botones claros, labels visibles y estados de carga comprensibles.
+- Los buscadores con lupa deben usar `form-input form-input-with-icon` para evitar superposición entre icono y texto.
+- Los filtros públicos deben seguir siendo responsivos: apilados en móvil y en grilla en escritorio.
 
 ## Backend FastAPI
 
@@ -316,6 +319,14 @@ Esta migración agrega:
 - Función `delete_sale_with_stock_restore` que elimina una venta y restaura el stock del producto asociado.
 - Esta migración debe ejecutarse manualmente en el SQL Editor de Supabase antes del despliegue final.
 
+- `supabase/2026-05-10_product_specs_admin_modal.sql`
+
+Esta migración agrega:
+
+- Campos opcionales `products.gender` y `products.sizes` para sexo y tallas.
+- Configuración `site_settings.show_product_specs` para mostrar u ocultar sexo/tallas en las cards del catálogo.
+- Grants necesarios para las columnas y configuración nueva.
+
 RLS:
 
 - RLS habilitado en tablas públicas.
@@ -337,6 +348,8 @@ Configuración visual:
 - `site_settings.show_exact_stock=true`: el catálogo muestra la cantidad exacta.
 - `site_settings.show_exact_stock=false`: el catálogo muestra solo `Disponible` o `Agotado`.
 - Esta opción se cambia desde `/admin`, en el panel de resumen.
+- `site_settings.show_product_specs=true`: las cards del catálogo muestran sexo y tallas cuando el producto los tiene.
+- `site_settings.show_product_specs=false`: las cards no muestran esas especificaciones; el detalle del producto sí puede mostrarlas si existen.
 
 ### Importante sobre grants
 
@@ -398,6 +411,8 @@ Resultado verificado:
 - `GET /api/products`: responde correctamente desde Supabase real.
 - Catálogo público en `http://localhost:5173`: consume datos reales.
 - Admin en `http://localhost:5173/admin`: consume datos reales luego de ajustar `VITE_DEMO_MODE`.
+- `npm.cmd run build`: verificado tras agregar filtro por género, corregir buscadores con lupa y simplificar acciones en Admin Productos.
+- Navegador integrado: `/` carga sin errores de consola, muestra `Filtrar por género` y el selector cambia correctamente a `Unisex`.
 
 ## Reglas Para Futuros Cambios
 
@@ -415,16 +430,20 @@ Resultado verificado:
 - Para pruebas locales de autenticación, preferir `localhost` en frontend y backend.
 - Si se toca la galería, conservar cambio de imagen y zoom en `/producto/:slug`.
 - Si se toca el Admin de productos, conservar subida, eliminación y selección de imagen principal.
+- El Admin de productos debe usar modal para crear/editar, con gestión de imágenes dentro del modal y columna `Portada` en la tabla.
+- En la tabla de Admin Productos, la columna `Acciones` debe mostrar solo `Editar`; no reintroducir botón separado de `Imágenes`.
+- Las confirmaciones del Admin deben usar `useToast` con toast fijo montado desde `AdminLayout`.
 - Si se toca el Admin de categorías, conservar subida y eliminación de imágenes lifestyle con límite de 5.
 - Nunca subir `.env` al repositorio (está en `.gitignore`).
 - Usar `useToast` hook para mensajes de éxito/error en el panel Admin.
 - Las tablas del Admin deben usar `<colgroup>` para distribuir columnas proporcionalmente.
 - Las páginas públicas `/categoria/:slug` rotan imágenes lifestyle del banner cada 3 segundos.
+- El filtro por género en catálogo es client-side y se aplica en `/` y `/categoria/:slug`; productos sin `gender` solo aparecen cuando el filtro está en `Todos`.
 
 ## Próximos Pasos Recomendados
 
 1. Verificar `.gitignore` asegura que `.env` no se suba al repo (ya configurado).
-2. Ejecutar `supabase/2026-05-04_feature_delete_sales.sql` en el SQL Editor de Supabase.
+2. Ejecutar `supabase/2026-05-04_feature_delete_sales.sql` y `supabase/2026-05-10_product_specs_admin_modal.sql` en el SQL Editor de Supabase.
 3. Configurar variables de entorno en Vercel (dashboard → Settings → Environment Variables).
 4. Desplegar frontend y backend en Vercel.
 5. Cargar productos reales e imágenes.

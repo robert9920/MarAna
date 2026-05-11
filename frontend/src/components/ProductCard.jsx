@@ -1,9 +1,12 @@
 import { Link } from "react-router-dom";
 import { MessageCircle } from "lucide-react";
-import { formatCurrency, productImageUrl } from "../lib/format.js";
+import { formatCurrency, formatGender, productImageUrl } from "../lib/format.js";
 
-export function ProductCard({ product, showExactStock = true }) {
+export function ProductCard({ product, showExactStock = true, showSpecs = false }) {
   const imageUrl = productImageUrl(product);
+  const gender = formatGender(product.gender);
+  const sizes = product.sizes || [];
+  const hasSpecs = showSpecs && (gender || sizes.length > 0);
 
   return (
     <article className="panel overflow-hidden">
@@ -24,6 +27,12 @@ export function ProductCard({ product, showExactStock = true }) {
           {product.name}
         </Link>
         <p className="text-xs text-stone-600">{product.brand || "Mar&Ana"}</p>
+        {hasSpecs ? (
+          <div className="grid gap-0.5 rounded-lg bg-stone-50 px-2 py-1.5 text-[11px] font-bold text-stone-700">
+            {gender ? <p>Sexo: {gender}</p> : null}
+            {sizes.length ? <p>Tallas: {sizes.join(", ")}</p> : null}
+          </div>
+        ) : null}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-lg font-black text-tinta">{formatCurrency(product.price)}</p>
           <p className={`rounded-lg px-2 py-1 text-xs font-bold ${product.stock > 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>

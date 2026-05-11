@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Ruler } from "lucide-react";
 import { adminApi } from "../../lib/api.js";
 import { formatCurrency } from "../../lib/format.js";
 
@@ -9,7 +9,7 @@ export function AdminDashboardPage() {
   const dashboardQuery = useQuery({ queryKey: ["admin-dashboard"], queryFn: adminApi.dashboard });
   const settingsQuery = useQuery({ queryKey: ["admin-site-settings"], queryFn: adminApi.siteSettings });
   const data = dashboardQuery.data;
-  const settings = settingsQuery.data || { show_exact_stock: true };
+  const settings = settingsQuery.data || { show_exact_stock: true, show_product_specs: false };
 
   const settingsMutation = useMutation({
     mutationFn: adminApi.saveSiteSettings,
@@ -31,19 +31,35 @@ export function AdminDashboardPage() {
         <MetricCard label="Ventas registradas" value={data?.sales_count || 0} />
         <MetricCard label="Unidades vendidas" value={data?.units_sold || 0} />
       </section>
-      <section className="panel flex flex-col gap-2 p-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h2 className="text-lg font-black text-cafe">Visibilidad de stock</h2>
-          <p className="mt-0.5 text-xs text-stone-600">Controla si los clientes ven la cantidad exacta o solo "Disponible / Agotado".</p>
+      <section className="grid gap-3 lg:grid-cols-2">
+        <div className="panel flex flex-col gap-2 p-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-lg font-black text-cafe">Visibilidad de stock</h2>
+            <p className="mt-0.5 text-xs text-stone-600">Controla si los clientes ven la cantidad exacta o solo "Disponible / Agotado".</p>
+          </div>
+          <button
+            className="btn-secondary"
+            onClick={() => settingsMutation.mutate({ ...settings, show_exact_stock: !settings.show_exact_stock })}
+            type="button"
+          >
+            {settings.show_exact_stock ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+            {settings.show_exact_stock ? "Ocultar cantidad exacta" : "Mostrar cantidad exacta"}
+          </button>
         </div>
-        <button
-          className="btn-secondary"
-          onClick={() => settingsMutation.mutate({ show_exact_stock: !settings.show_exact_stock })}
-          type="button"
-        >
-          {settings.show_exact_stock ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-          {settings.show_exact_stock ? "Ocultar cantidad exacta" : "Mostrar cantidad exacta"}
-        </button>
+        <div className="panel flex flex-col gap-2 p-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-lg font-black text-cafe">Sexo y tallas</h2>
+            <p className="mt-0.5 text-xs text-stone-600">Muestra las especificaciones en las cards del catálogo cuando estén registradas.</p>
+          </div>
+          <button
+            className="btn-secondary"
+            onClick={() => settingsMutation.mutate({ ...settings, show_product_specs: !settings.show_product_specs })}
+            type="button"
+          >
+            <Ruler className="h-3.5 w-3.5" />
+            {settings.show_product_specs ? "Ocultar en cards" : "Mostrar en cards"}
+          </button>
+        </div>
       </section>
       <section className="grid gap-6 xl:grid-cols-[1fr_360px]">
         <div className="panel p-5">

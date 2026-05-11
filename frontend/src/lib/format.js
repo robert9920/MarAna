@@ -23,3 +23,29 @@ export function productImageUrl(product) {
   const primary = getPrimaryImage(product);
   return primary?.image_url || primary?.public_url || "";
 }
+
+export const genderLabels = {
+  mujer: "Mujer",
+  hombre: "Hombre",
+  unisex: "Unisex",
+  niña: "Niña",
+  niño: "Niño"
+};
+
+export function formatGender(value) {
+  return genderLabels[value] || "";
+}
+
+export function normalizeSizesInput(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+export function sizesToInput(sizes) {
+  return (sizes || []).join(", ");
+}

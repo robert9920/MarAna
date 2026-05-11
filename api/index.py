@@ -11,7 +11,7 @@ from argon2 import PasswordHasher
 from fastapi import Cookie, Depends, FastAPI, File, Form, HTTPException, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from supabase import Client, create_client
 
 PERU_TZ = timezone(timedelta(hours=-5))
@@ -28,6 +28,7 @@ app.add_middleware(
 ph = PasswordHasher()
 SESSION_COOKIE = "marana_session"
 SESSION_DAYS = 7
+VALID_GENDERS = {"mujer", "hombre", "unisex", "niña", "niño"}
 
 
 def get_supabase() -> Client:
@@ -78,6 +79,28 @@ class ProductPayload(BaseModel):
     description: str | None = None
     status: str = "active"
     featured: bool = False
+    gender: str | None = Field(default=None, max_length=20)
+    sizes: list[str] = Field(default_factory=list)
+
+    @field_validator("gender")
+    @classmethod
+    def validate_gender(cls, value: str | None) -> str | None:
+        if not value:
+            return None
+        normalized = value.strip().lower()
+        if normalized not in VALID_GENDERS:
+            raise ValueError("Sexo de producto no válido.")
+        return normalized
+
+    @field_validator("sizes")
+    @classmethod
+    def normalize_sizes(cls, value: list[str]) -> list[str]:
+        clean_sizes = []
+        for item in value or []:
+            text = str(item).strip()
+            if text and text not in clean_sizes:
+                clean_sizes.append(text[:30])
+        return clean_sizes
 
 
 class SalePayload(BaseModel):
@@ -91,6 +114,7 @@ class SalePayload(BaseModel):
 
 class SiteSettingsPayload(BaseModel):
     show_exact_stock: bool = True
+    show_product_specs: bool = False
 
 
 def normalize_storage_row(row: dict[str, Any]) -> dict[str, Any]:
@@ -125,9 +149,10 @@ def normalize_category(row: dict[str, Any]) -> dict[str, Any]:
 def get_site_settings() -> dict[str, Any]:
     supabase = get_supabase()
     result = supabase.table("site_settings").select("*").eq("id", 1).limit(1).execute()
-    row = result.data[0] if result.data else {"show_exact_stock": True}
+    row = result.data[0] if result.data else {"show_exact_stock": True, "show_product_specs": False}
     return {
         "show_exact_stock": bool(row.get("show_exact_stock", True)),
+        "show_product_specs": bool(row.get("show_product_specs", False)),
         "whatsapp_phone": os.getenv("WHATSAPP_PHONE", "51999999999"),
         "instagram_url": os.getenv("INSTAGRAM_URL", ""),
     }
@@ -286,11 +311,17 @@ def admin_site_settings(admin=Depends(require_admin)):
 @app.put("/api/admin/site-settings")
 def update_site_settings(payload: SiteSettingsPayload, admin=Depends(require_admin)):
     supabase = get_supabase()
-    row = {"id": 1, "show_exact_stock": payload.show_exact_stock, "updated_at": now_utc().isoformat()}
+    row = {
+        "id": 1,
+        "show_exact_stock": payload.show_exact_stock,
+        "show_product_specs": payload.show_product_specs,
+        "updated_at": now_utc().isoformat(),
+    }
     result = supabase.table("site_settings").upsert(row).execute()
     saved = result.data[0] if result.data else row
     return {
         "show_exact_stock": saved["show_exact_stock"],
+        "show_product_specs": saved.get("show_product_specs", False),
         "whatsapp_phone": os.getenv("WHATSAPP_PHONE", "51999999999"),
         "instagram_url": os.getenv("INSTAGRAM_URL", ""),
     }

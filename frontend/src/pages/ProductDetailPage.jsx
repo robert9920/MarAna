@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Instagram, MessageCircle } from "lucide-react";
 import { ProductGallery } from "../components/ProductGallery.jsx";
 import { publicApi } from "../lib/api.js";
-import { formatCurrency } from "../lib/format.js";
+import { formatCurrency, formatGender } from "../lib/format.js";
 
 export function ProductDetailPage() {
   const { slug } = useParams();
@@ -14,6 +14,8 @@ export function ProductDetailPage() {
   const phone = settings.whatsapp_phone || import.meta.env.VITE_WHATSAPP_PHONE || "51999999999";
   const instagramUrl = settings.instagram_url || import.meta.env.VITE_INSTAGRAM_URL || "";
   const message = encodeURIComponent(`Hola, deseo consultar por este producto: ${product?.name || ""}`);
+  const gender = formatGender(product?.gender);
+  const sizes = product?.sizes || [];
 
   if (productQuery.isLoading) {
     return <div className="mx-auto max-w-7xl px-3 py-6 text-sm font-bold text-cafe">Cargando producto...</div>;
@@ -39,6 +41,13 @@ export function ProductDetailPage() {
           <p className={`w-fit rounded-lg px-2.5 py-1.5 text-sm font-bold ${product.stock > 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
             {product.stock > 0 ? (settings.show_exact_stock === false ? "Disponible" : `${product.stock} unidades disponibles`) : "Agotado"}
           </p>
+          {gender || sizes.length ? (
+            <div className="grid gap-1 rounded-lg border border-stone-200 bg-white p-3 text-sm text-stone-700">
+              <p className="font-black text-cafe">Especificaciones</p>
+              {gender ? <p><span className="font-bold">Sexo:</span> {gender}</p> : null}
+              {sizes.length ? <p><span className="font-bold">Tallas:</span> {sizes.join(", ")}</p> : null}
+            </div>
+          ) : null}
           <p className="text-sm leading-relaxed text-stone-700">{product.description}</p>
           <p className="rounded-lg bg-stone-100 p-2.5 text-xs font-bold text-cafe">Producto traído desde Estados Unidos.</p>
           <div className="flex flex-wrap gap-2">

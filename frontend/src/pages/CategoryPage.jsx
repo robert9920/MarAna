@@ -8,6 +8,7 @@ import { publicApi } from "../lib/api.js";
 export function CategoryPage() {
   const { slug } = useParams();
   const [query, setQuery] = useState("");
+  const [genderFilter, setGenderFilter] = useState("");
   const categoriesQuery = useQuery({ queryKey: ["categories"], queryFn: publicApi.categories });
   const productsQuery = useQuery({ queryKey: ["products", slug], queryFn: () => publicApi.products({ category: slug }) });
   const settingsQuery = useQuery({ queryKey: ["site-settings"], queryFn: publicApi.siteSettings });
@@ -23,14 +24,16 @@ export function CategoryPage() {
 
   const products = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = (productsQuery.data || []).filter((product) => !q || `${product.name} ${product.brand}`.toLowerCase().includes(q));
+    const filtered = (productsQuery.data || [])
+      .filter((product) => !genderFilter || product.gender === genderFilter)
+      .filter((product) => !q || `${product.name} ${product.brand || ""}`.toLowerCase().includes(q));
     return filtered.sort((a, b) => {
       const aAvailable = a.stock > 0 ? 0 : 1;
       const bAvailable = b.stock > 0 ? 0 : 1;
       if (aAvailable !== bAvailable) return aAvailable - bAvailable;
       return a.price - b.price;
     });
-  }, [productsQuery.data, query]);
+  }, [genderFilter, productsQuery.data, query]);
 
   return (
     <div className="mx-auto grid max-w-7xl gap-4 px-3 py-4 sm:px-5">
@@ -43,10 +46,22 @@ export function CategoryPage() {
           <p className="mt-1 max-w-2xl text-xs text-white/90 sm:text-sm">Productos disponibles para consultar por WhatsApp.</p>
         </div>
       </section>
-      <CatalogFilters categories={categoriesQuery.data || []} query={query} setQuery={setQuery} activeCategory={slug} />
+      <CatalogFilters
+        activeCategory={slug}
+        categories={categoriesQuery.data || []}
+        genderFilter={genderFilter}
+        query={query}
+        setGenderFilter={setGenderFilter}
+        setQuery={setQuery}
+      />
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {products.map((product) => (
-          <ProductCard key={product.id} product={product} showExactStock={settingsQuery.data?.show_exact_stock !== false} />
+          <ProductCard
+            key={product.id}
+            product={product}
+            showExactStock={settingsQuery.data?.show_exact_stock !== false}
+            showSpecs={settingsQuery.data?.show_product_specs === true}
+          />
         ))}
       </section>
       {!products.length ? <div className="panel p-4 text-center text-sm font-bold text-cafe">No hay productos activos en esta categoría.</div> : null}

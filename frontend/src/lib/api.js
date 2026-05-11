@@ -57,6 +57,7 @@ export const publicApi = {
       () => request("/site-settings"),
       () => ({
         show_exact_stock: true,
+        show_product_specs: false,
         whatsapp_phone: import.meta.env.VITE_WHATSAPP_PHONE || "51999999999",
         instagram_url: import.meta.env.VITE_INSTAGRAM_URL || ""
       })
@@ -116,7 +117,7 @@ export const adminApi = {
       }
     ),
   categories: () => withFallback(() => request("/admin/categories"), () => getLocalData().categories),
-  siteSettings: () => withFallback(() => request("/admin/site-settings"), () => ({ show_exact_stock: true })),
+  siteSettings: () => withFallback(() => request("/admin/site-settings"), () => ({ show_exact_stock: true, show_product_specs: false })),
   saveSiteSettings: (settings) =>
     withFallback(
       () =>

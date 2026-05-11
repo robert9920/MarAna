@@ -7,20 +7,23 @@ import { publicApi } from "../lib/api.js";
 
 export function CatalogPage() {
   const [query, setQuery] = useState("");
+  const [genderFilter, setGenderFilter] = useState("");
   const categoriesQuery = useQuery({ queryKey: ["categories"], queryFn: publicApi.categories });
   const productsQuery = useQuery({ queryKey: ["products"], queryFn: () => publicApi.products() });
   const settingsQuery = useQuery({ queryKey: ["site-settings"], queryFn: publicApi.siteSettings });
 
   const products = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const filtered = (productsQuery.data || []).filter((product) => !q || `${product.name} ${product.brand}`.toLowerCase().includes(q));
+    const filtered = (productsQuery.data || [])
+      .filter((product) => !genderFilter || product.gender === genderFilter)
+      .filter((product) => !q || `${product.name} ${product.brand || ""}`.toLowerCase().includes(q));
     return filtered.sort((a, b) => {
       const aAvailable = a.stock > 0 ? 0 : 1;
       const bAvailable = b.stock > 0 ? 0 : 1;
       if (aAvailable !== bAvailable) return aAvailable - bAvailable;
       return a.price - b.price;
     });
-  }, [productsQuery.data, query]);
+  }, [genderFilter, productsQuery.data, query]);
 
   return (
     <div className="mx-auto grid max-w-7xl gap-4 px-3 py-4 sm:px-5">
@@ -33,11 +36,22 @@ export function CatalogPage() {
         </p>
       </section>
       <CategoryShowcase categories={categoriesQuery.data || []} />
-      <CatalogFilters categories={categoriesQuery.data || []} query={query} setQuery={setQuery} />
+      <CatalogFilters
+        categories={categoriesQuery.data || []}
+        genderFilter={genderFilter}
+        query={query}
+        setGenderFilter={setGenderFilter}
+        setQuery={setQuery}
+      />
       {productsQuery.isLoading ? <p className="text-sm font-bold text-cafe">Cargando productos...</p> : null}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {products.map((product) => (
-          <ProductCard key={product.id} product={product} showExactStock={settingsQuery.data?.show_exact_stock !== false} />
+          <ProductCard
+            key={product.id}
+            product={product}
+            showExactStock={settingsQuery.data?.show_exact_stock !== false}
+            showSpecs={settingsQuery.data?.show_product_specs === true}
+          />
         ))}
       </section>
       {!products.length && !productsQuery.isLoading ? (

@@ -19,6 +19,8 @@ export const mockProducts = [
     description: "Cartera de uso diario con acabado elegante, ideal para reuniones, paseos y ocasiones especiales.",
     status: "active",
     featured: true,
+    gender: "mujer",
+    sizes: [],
     images: []
   },
   {
@@ -34,6 +36,8 @@ export const mockProducts = [
     description: "Aroma floral suave y duradero para uso diario.",
     status: "active",
     featured: true,
+    gender: "unisex",
+    sizes: [],
     images: []
   },
   {
@@ -49,6 +53,8 @@ export const mockProducts = [
     description: "Zapatillas cómodas para caminar, con diseño moderno y fácil de combinar.",
     status: "active",
     featured: false,
+    gender: "unisex",
+    sizes: ["38", "39", "40"],
     images: []
   },
   {
@@ -64,6 +70,8 @@ export const mockProducts = [
     description: "Casaca ligera para clima fresco, con corte cómodo y elegante.",
     status: "active",
     featured: false,
+    gender: "mujer",
+    sizes: ["S", "M", "L"],
     images: []
   }
 ];

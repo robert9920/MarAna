@@ -136,9 +136,9 @@ export function AdminSalesPage() {
           <label className="md:col-span-2">
             <span className="form-label">Buscar producto</span>
             <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-500" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-500" />
               <input
-                className="form-input form-input-search"
+                className="form-input form-input-with-icon"
                 value={productFilter}
                 onChange={(event) => setProductFilter(event.target.value)}
                 placeholder="Escribe nombre o marca"
